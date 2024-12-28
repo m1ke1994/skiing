@@ -4,12 +4,12 @@
 <template>
     <div class="menu_adaptive">
         <ul class="nav_list">
-           <NuxtLink class="nav_text">Главная</NuxtLink>
-           <NuxtLink class="nav_text">Лыжи</NuxtLink>
-           <NuxtLink class="nav_text">Сноуборд</NuxtLink>
-           <NuxtLink class="nav_text">Поездки</NuxtLink>
-           <NuxtLink class="nav_text">Как это было</NuxtLink>
-           <NuxtLink class="nav_text">Магазин</NuxtLink>
+           <NuxtLink to="/" class="nav_text">Главная</NuxtLink>
+           <NuxtLink to="/SportsPage" class="nav_text">Лыжи</NuxtLink>
+           <NuxtLink to="/SportsPage" class="nav_text">Сноуборд</NuxtLink>
+           <NuxtLink to="#trip" class="nav_text">Поездки</NuxtLink>
+           <NuxtLink to="#now" class="nav_text">Как это было</NuxtLink>
+           <NuxtLink to="/MagazinePage" class="nav_text">Магазин</NuxtLink>
         </ul>
         
 
@@ -17,6 +17,9 @@
 
 </template>
 <style scoped>
+.nav_text{
+    cursor: pointer;
+}
 
 .nav_list{
     display: flex ;
