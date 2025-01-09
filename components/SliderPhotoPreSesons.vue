@@ -55,7 +55,7 @@ h1{
   color: #034184;
 }
 .sliders{
-  width: 70%;
+  width: 100%;
   margin:  0 auto;
  
 }
