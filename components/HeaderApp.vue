@@ -12,7 +12,7 @@ const isMenuFunc = () => {
 
 const snowflakes = ref([]);
 const backgroundIndex = ref(0);
-const backgrounds = ['/public/img/back3.jpg', '/public/img/back1.jpg', '/public/img/back2.jpg'];
+const backgrounds = ['/img/back3.jpg', '/img/back1.jpg', '/img/back2.jpg','/img/back.jpg'];
 const isMobile = ref(false);
 const isBackgroundAnimationEnabled = ref(true); // Добавляем флаг для управления анимацией фона
 
@@ -305,7 +305,7 @@ onMounted(() => {
 @media (max-width: 1000px) {
   .background {
     transition: none; /* Отключаем плавное изменение фона */
-    background-image: url('/public/img/back.jpg') !important; /* Фиксируем один фон */
+    background-image: url('/img/back.jpg') !important; /* Фиксируем один фон */
   }
 }
 /* Медиа-запрос для мобильного меню */
