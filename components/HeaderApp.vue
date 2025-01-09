@@ -84,7 +84,7 @@ onMounted(() => {
     <div class="isMobile header_conteiner" v-else>
       <div class="header_menu">
         <ul class="header_menu_left">
-          <NuxtLink to="#">
+          <NuxtLink to="/">
             <img src="/public/img/logo.svg"  alt="logo">
           </NuxtLink>
         </ul>

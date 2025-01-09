@@ -8,6 +8,7 @@ export const useBasketStore = defineStore('basket', {
     // Добавление курса в корзину
     addToBasket(course) {
       this.basket.push(course);
+      
     },
     // Очистка корзины (опционально)
     clearBasket() {

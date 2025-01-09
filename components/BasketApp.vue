@@ -1,16 +1,16 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { useBasketStore } from '~/stores/basketStore';
 
 /* -----------------------------Корзина-------------------------------- */
 const props = defineProps({
   isFuncBasket: Function,
 });
+const basketStore = useBasketStore();
 
-const cartItems = ref([
-  { name: 'Курс Basic', price: 10.0, quantity: 1 },
-  { name: 'Курс Pro1', price: 20.0, quantity: 1 },
-]);
+const cartItems = computed(() => basketStore.basket);
+
 
 const removeItem = (index) => {
   cartItems.value.splice(index, 1);
@@ -28,9 +28,7 @@ const decreaseQuantity = (index) => {
   }
 };
 
-const totalPrice = computed(() => {
-  return cartItems.value.reduce((total, item) => total + item.price * item.quantity, 0);
-});
+
 </script>
 
 <template>
@@ -41,19 +39,15 @@ const totalPrice = computed(() => {
       <h2>Записаться на курсы</h2>
       <div class="cart-items">
         <div v-for="(item, index) in cartItems" :key="index" class="cart-item">
-          <span class="cart-item__name">{{ item.name }}</span>
-          <div class="cart-item__quantity">
-            <button @click="decreaseQuantity(index)">-</button>
-            <span>{{ item.quantity }}</span>
-            <button @click="increaseQuantity(index)">+</button>
-          </div>
-          <span class="cart-item__price">${{ (item.price * item.quantity).toFixed(2) }}</span>
+          <span class="cart-item__name">{{ item.title }} ({{ item.category }})</span>
+         
+          <span class="cart-item__price">{{ item.price  }} ₽</span>
           <button @click="removeItem(index)" class="cart-item__remove">×</button>
         </div>
       </div>
       <div class="cart-total">
-        <span>Итого:</span>
-        <span>${{ totalPrice.toFixed(2) }}</span>
+        
+       
       </div>
       <button class="cart-modal__checkout">Оставить заявку</button>
     </div>
