@@ -212,9 +212,7 @@ const toggleDetails = (index) => {
         <li v-if="isButtonOrder" class="order__modal">
           <OrderApp :isFuncButtonOrder="isFuncButtonOrder"></OrderApp>
         </li>
-        <li v-if="!isButtonOrder">
-          <button @click="isFuncButtonOrder" class="button_order">Записаться</button>
-        </li>
+        
       </ul>
         <div class="course-container">
     <h1>Наши курсы</h1>
@@ -288,7 +286,7 @@ h1 {
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   perspective: 1000px;
-  height: 450px;
+  height: 550px;
 }
 
 .course-card:hover {

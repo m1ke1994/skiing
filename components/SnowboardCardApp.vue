@@ -176,7 +176,7 @@ h1 {
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   perspective: 1000px;
-  height: 450px;
+  height: 550px;
 }
 
 .course-card:hover {
@@ -206,7 +206,6 @@ h1 {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
 .course-card__front {
@@ -231,7 +230,7 @@ h1 {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: space-between; /* Распределяет пространство между элементами */
 }
 
 .course-card__title {
@@ -257,6 +256,7 @@ h1 {
   display: flex;
   gap: 10px;
   justify-content: center;
+  padding-top: 20px; /* Добавлен отступ сверху для кнопок */
 }
 
 .button {

@@ -1,54 +1,50 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 
-/* -----------------------------Корзина-------------------------------- */
 const props = defineProps({
-  isFuncBasket:Function,
-  
-})
+  isFuncBasket: Function,
+});
 
-
-/* -----------------------------Корзина-------------------------------- */
-const isMenu=ref(false);
-const isMenuFunc=()=>{
-  isMenu.value=!isMenu.value;
-}
+const isMenu = ref(false);
+const isMenuFunc = () => {
+  isMenu.value = !isMenu.value;
+};
 
 const snowflakes = ref([]);
 const backgroundIndex = ref(0);
-const backgrounds = ['img/back3.jpg', 'img/back1.jpg', 'img/back2.jpg', 'img/back.jpg']; // Массив фоновых изображений
-const isMobile = ref(false); // Переменная для определения мобильного режима
+const backgrounds = ['img/back3.jpg', 'img/back1.jpg', 'img/back2.jpg', 'img/back.jpg'];
+const isMobile = ref(false);
+const isBackgroundAnimationEnabled = ref(true); // Добавляем флаг для управления анимацией фона
 
-// Функция для определения ширины экрана
 const checkScreenSize = () => {
   isMobile.value = window.innerWidth < 1030;
+  isBackgroundAnimationEnabled.value = window.innerWidth >= 1000; // Отключаем анимацию при ширине < 1000px
 };
 
 onMounted(() => {
-  // Создаем 10 снежинок с случайными координатами по X и Y
   for (let i = 0; i < 50; i++) {
     snowflakes.value.push({
       id: i,
-      x: Math.random() * 100, // Случайная координата по X (в процентах)
-      y: -Math.random() * 100, // Случайная координата по Y (за пределами экрана сверху)
-      size: Math.random() * 30, // Случайный размер от 30px до 100px
-      speed: Math.random() * 5 + 20, // Случайная скорость падения от 5s до 10s
+      x: Math.random() * 100,
+      y: -Math.random() * 100,
+      size: Math.random() * 30,
+      speed: Math.random() * 5 + 20,
     });
   }
 
-  // Устанавливаем интервал для смены фона
-  setInterval(() => {
-    backgroundIndex.value = (backgroundIndex.value + 1) % backgrounds.length;
-  }, 5000); // Каждые 5 секунд
+  const backgroundInterval = setInterval(() => {
+    if (isBackgroundAnimationEnabled.value) { // Меняем фон только если анимация включена
+      backgroundIndex.value = (backgroundIndex.value + 1) % backgrounds.length;
+    }
+  }, 5000);
 
-  // Проверяем размер экрана при загрузке и при изменении размера
   checkScreenSize();
   window.addEventListener('resize', checkScreenSize);
-});
 
-onBeforeUnmount(() => {
-  // Удаляем обработчик события при размонтировании компонента
-  window.removeEventListener('resize', checkScreenSize);
+  onBeforeUnmount(() => {
+    clearInterval(backgroundInterval); // Очищаем интервал при размонтировании
+    window.removeEventListener('resize', checkScreenSize);
+  });
 });
 </script>
 
@@ -120,7 +116,7 @@ onBeforeUnmount(() => {
 
 
   
-    <section class="background" :style="{ backgroundImage: `url(${backgrounds[backgroundIndex]})` }">
+    <section class="background" :style="{ backgroundImage: isBackgroundAnimationEnabled ? `url(${backgrounds[backgroundIndex]})` : 'url(img/back.jpg)',}">
       <!-- Динамически создаем снежинки -->
       <div
         v-for="snowflake in snowflakes"
@@ -196,6 +192,7 @@ onBeforeUnmount(() => {
   position: relative;
   overflow: hidden;
   padding-bottom: 180px;
+  transition: background-image 2s ease-in-out;
 }
 
 .snowflake {
@@ -305,6 +302,12 @@ onBeforeUnmount(() => {
   }
 }
 
+@media (max-width: 1000px) {
+  .background {
+    transition: none; /* Отключаем плавное изменение фона */
+    background-image: url('img/back.jpg') !important; /* Фиксируем один фон */
+  }
+}
 /* Медиа-запрос для мобильного меню */
 @media (max-width: 1029px) {
   .header_conteiner:not(.isMobile) {
