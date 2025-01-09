@@ -12,31 +12,16 @@ const isMenuFunc = () => {
 
 const snowflakes = ref([]);
 const backgroundIndex = ref(0);
-const backgrounds = ['img/back3.jpg', 'img/back1.jpg', 'img/back2.jpg'];
+const backgrounds = ['/public/img/back3.jpg', '/public/img/back1.jpg', '/public/img/back2.jpg'];
 const isMobile = ref(false);
-const isBackgroundAnimationEnabled = ref(true);
-const currentBackground = ref(backgrounds[0]); // Текущий фон
+const isBackgroundAnimationEnabled = ref(true); // Добавляем флаг для управления анимацией фона
 
 const checkScreenSize = () => {
   isMobile.value = window.innerWidth < 1030;
-  isBackgroundAnimationEnabled.value = window.innerWidth >= 1000;
-
-  // Если ширина экрана меньше 1000px, используем img/back3.jpg
-  if (window.innerWidth < 1000) {
-    currentBackground.value = 'img/back3.jpg';
-  } else {
-    currentBackground.value = backgrounds[backgroundIndex.value];
-  }
+  isBackgroundAnimationEnabled.value = window.innerWidth >= 1000; // Отключаем анимацию при ширине < 1000px
 };
 
 onMounted(() => {
-  // Предзагрузка изображений
-  const preloadImages = backgrounds.map(src => {
-    const img = new Image();
-    img.src = src;
-    return img;
-  });
-
   for (let i = 0; i < 50; i++) {
     snowflakes.value.push({
       id: i,
@@ -48,17 +33,16 @@ onMounted(() => {
   }
 
   const backgroundInterval = setInterval(() => {
-    if (isBackgroundAnimationEnabled.value) {
+    if (isBackgroundAnimationEnabled.value) { // Меняем фон только если анимация включена
       backgroundIndex.value = (backgroundIndex.value + 1) % backgrounds.length;
-      currentBackground.value = backgrounds[backgroundIndex.value];
     }
-  }, 5000);
+  }, 10000);
 
   checkScreenSize();
   window.addEventListener('resize', checkScreenSize);
 
   onBeforeUnmount(() => {
-    clearInterval(backgroundInterval);
+    clearInterval(backgroundInterval); // Очищаем интервал при размонтировании
     window.removeEventListener('resize', checkScreenSize);
   });
 });
@@ -132,36 +116,38 @@ onMounted(() => {
 
 
   
-    <section class="background" :style="{ backgroundImage: `url(${currentBackground})` }">
-    <!-- Динамически создаем снежинки -->
-    <div
-      v-for="snowflake in snowflakes"
-      :key="snowflake.id"
-      class="snowflake"
-      :style="{
-        left: `${snowflake.x}%`,
-        top: `${snowflake.y}%`,
-        width: `${snowflake.size}px`,
-        height: `${snowflake.size}px`,
-        animationDuration: `${snowflake.speed}s`,
-      }"
-    ></div>
-    
-    <div class="start_header">
-      <h1>Обучаем катанию и организуем выезды в горы</h1>
-      <p>
-        Мы предлагаем обучение катанию на лыжах и сноуборде, 
-        а также организуем выезды в горы для всех уровней. Опытные 
-        инструкторы помогут освоить технику, улучшить мастерство и 
-        получить удовольствие. Включает лучшие склоны, комфорт и 
-        захватывающие виды. Присоединяйтесь к незабываемым зимним 
-        приключениям!
-      </p>
-      <div class="button">
-        <NuxtLink to="#trip"><button>Календарь поездок</button></NuxtLink>
+    <section class="background" :style="{ backgroundImage: isBackgroundAnimationEnabled ? `url(${backgrounds[backgroundIndex]})` : 'url(img/back.jpg)',}">
+      <!-- Динамически создаем снежинки -->
+      <div
+        v-for="snowflake in snowflakes"
+        :key="snowflake.id"
+        class="snowflake"
+        :style="{
+          left: `${snowflake.x}%`,
+          top: `${snowflake.y}%`,
+          width: `${snowflake.size}px`,
+          height: `${snowflake.size}px`,
+          animationDuration: `${snowflake.speed}s`,
+        }"
+      ></div>
+      
+      <div class="start_header">
+        <h1>Обучаем катанию и организуем выезды в горы</h1>
+        <p>Мы предлагаем обучение катанию на лыжах и сноуборде, 
+            а также организуем выезды в горы для всех уровней. Опытные 
+            инструкторы помогут освоить технику, улучшить мастерство и 
+            получить удовольствие. Включает лучшие склоны, комфорт и 
+            захватывающие виды. Присоединяйтесь к незабываемым зимним 
+            приключениям!
+        </p>
+        <div class="button">
+            <NuxtLink to="#trip"><button>Календарь поездок</button></NuxtLink>
+        </div>
+       
       </div>
-    </div>
-  </section>
+      
+      
+    </section>
    
   </template>
 
@@ -319,7 +305,7 @@ onMounted(() => {
 @media (max-width: 1000px) {
   .background {
     transition: none; /* Отключаем плавное изменение фона */
-    background-image: url('img/back3.jpg') !important; /* Фиксируем фон */
+    background-image: url('/public/img/back.jpg') !important; /* Фиксируем один фон */
   }
 }
 /* Медиа-запрос для мобильного меню */
