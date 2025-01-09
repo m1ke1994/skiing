@@ -90,7 +90,7 @@ onMounted(() => {
         </ul>
         <ul class="header_menu_right">
           <NuxtLink to="#">
-            <img src="/public/img/basket.svg" alt="">
+            <img src="/public/img/basket.svg" alt=""  @click="props.isFuncBasket">
           </NuxtLink>
           <NuxtLink >
             <img :src='isMenu ? "/img/close.svg" : "/img/menu.svg"'  @click="isMenuFunc" alt="">
