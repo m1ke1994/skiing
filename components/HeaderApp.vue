@@ -1,5 +1,16 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { useBasketStore } from '~/stores/basketStore';
+
+const basketStore = useBasketStore();
+const countBasket = computed(() => basketStore.basketCount); // Реактивное вычисление количества товаров в корзине
+
+
+
+
+
+
+
 
 const props = defineProps({
   isFuncBasket: Function,
@@ -73,8 +84,11 @@ onMounted(() => {
           <NuxtLink to="/MagazinePage">
             <li class="nav_text">Магазин</li>
           </NuxtLink>
-          
+          <div id="basket">
             <img class="basket" @click="props.isFuncBasket" src="/public/img/basket.svg" alt="">
+            <p class="BasketCount">{{ countBasket }}</p>
+          </div>
+            
           
         </ul>
       </div>
@@ -90,7 +104,10 @@ onMounted(() => {
         </ul>
         <ul class="header_menu_right">
           <NuxtLink to="#">
-            <img src="/public/img/basket.svg" alt=""  @click="props.isFuncBasket">
+            <div id="basket">
+            <img class="basket" @click="props.isFuncBasket" src="/public/img/basket.svg" alt="">
+            <p class="BasketCount">{{ countBasket }}</p>
+          </div>
           </NuxtLink>
           <NuxtLink >
             <img :src='isMenu ? "/img/close.svg" : "/img/menu.svg"'  @click="isMenuFunc" alt="">
@@ -155,7 +172,19 @@ onMounted(() => {
 
 
 /* -------------------------------------------------------- */
-
+.BasketCount{
+  font-size: 15px;
+  position: absolute;
+  top:0px;
+  left: 35px;
+  color: #fff;
+  font-weight: 600;
+}
+#basket{
+  position: relative;
+  display: flex;
+  align-items: center;
+}
 .basket{
   cursor: pointer;
 }
