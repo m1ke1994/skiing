@@ -6,11 +6,11 @@
     <div class="container_footer">
         <img src="/img/logoFooter.svg" alt="logo">
         <ul class="nav__footer">
-            <NuxtLink to="#"><li>Лыжи</li></NuxtLink>
-            <NuxtLink to="#"><li>Сноуборд</li></NuxtLink>
-            <NuxtLink to="#"><li>Поездки</li></NuxtLink>
-            <NuxtLink to="#"><li>Как это было</li></NuxtLink>
-            <NuxtLink to="#"><li>Магазин</li></NuxtLink>
+            <NuxtLink to="/SportsPage"><li>Лыжи</li></NuxtLink>
+            <NuxtLink to="/SportsPage"><li>Сноуборд</li></NuxtLink>
+            <NuxtLink to="#trip"><li>Поездки</li></NuxtLink>
+            <NuxtLink to="#now"><li>Как это было</li></NuxtLink>
+            <NuxtLink to="/MagazinePage"><li>Магазин</li></NuxtLink>
         </ul>
         <hr>
         <div class="flexAllrights">
