@@ -12,15 +12,15 @@
 
     <div class="team-app__items">
       <div class="team-app__item">
-        <img class="team-app__item-image" src="/public/img/team.jpg" alt="Инструктор">
+        <img class="team-app__item-image" src="/public/img/team.jpg"  alt="Инструктор">
         <p class="team-app__item-title">Инструктор по горным лыжам</p>
       </div>
       <div class="team-app__item">
-        <img class="team-app__item-image" src="/public/img/team.jpg" alt="Инструктор">
-        <p class="team-app__item-title">Инструктор по горным лыжам</p>
+        <img class="team-app__item-image" src="/public/img/team1.jpg" alt="Инструктор">
+        <p class="team-app__item-title">Инструктор по сноуборду</p>
       </div>
       <div class="team-app__item">
-        <img class="team-app__item-image" src="/public/img/team.jpg" alt="Инструктор">
+        <img class="team-app__item-image" src="/public/img/team2.jpg" alt="Инструктор">
         <p class="team-app__item-title">Инструктор по горным лыжам</p>
       </div>
     </div>
@@ -47,6 +47,10 @@
   h1{
     margin-top: 50px;
   }
+}
+.team-app__item img{
+  width: 294px;
+  height: 299px;
 }
 h1 {
   padding: 30px 10px;

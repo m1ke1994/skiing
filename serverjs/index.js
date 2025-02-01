@@ -3,7 +3,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const app = express();
+const TelegramBot = require('node-telegram-bot-api');
 const PORT = process.env.PORT || 3005;
+
+// Инициализация бота
+const botToken = process.env.TELEGRAM_BOT_TOKEN;
+const bot = new TelegramBot(botToken, { polling: true });
 
 // Middleware
 app.use(cors());
@@ -13,60 +18,78 @@ app.use(express.json());
 const mongoUrl = process.env.MONGODB_URL;
 
 mongoose.connect(mongoUrl)
-.then(() => {
-    console.log('Connected to MongoDB');
-})
-.catch(err => {
-    console.error('Ошибка подключения к MongoDB:', err.message);
+    .then(() => {
+        console.log('Connected to MongoDB');
+    })
+    .catch(err => {
+        console.error('Ошибка подключения к MongoDB:', err.message);
+    });
+
+// Схема для счетчика
+const counterSchema = new mongoose.Schema({
+    _id: { type: String, required: true },
+    seq: { type: Number, default: 0 }
 });
+
+const Counter = mongoose.model('Counter', counterSchema);
+
+// Функция для получения следующего номера заявки
+async function getNextSequenceValue(sequenceName) {
+    const sequenceDocument = await Counter.findOneAndUpdate(
+        { _id: sequenceName },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+    );
+    return sequenceDocument.seq;
+}
+
 // Схема для мероприятия
 const eventSchema = new mongoose.Schema({
-    _id: Number, // Уникальный идентификатор
-    month: String, // Месяц проведения
-    place: String, // Место проведения
-    date: String, // Даты проведения
-    isList: Boolean, // Флаг, является ли мероприятие списком
-    leader_name: String, // Имя руководителя
-    leader_responsibilities: Array, // Обязанности руководителя
-    requirements_equipment: Array, // Необходимое снаряжение
-    requirements_skills: String, // Требуемые навыки
-    cost_amount: Number, // Стоимость
-    cost_currency: String, // Валюта стоимости
-    cost_additional_services: String // Дополнительные услуги
-  });
-  
-  // Модель для коллекции "events"
-  const Event = mongoose.model('events', eventSchema, 'events');
-  // Роут для получения всех мероприятий
+    _id: Number,
+    month: String,
+    place: String,
+    date: String,
+    isList: Boolean,
+    leader_name: String,
+    leader_responsibilities: Array,
+    requirements_equipment: Array,
+    requirements_skills: String,
+    cost_amount: Number,
+    cost_currency: String,
+    cost_additional_services: String,
+    start_date: String,//
+});
+
+const Event = mongoose.model('events', eventSchema, 'events');
+
+// Роут для получения всех мероприятий
 app.get('/api/events', async (req, res) => {
     try {
-      console.log('Запрос на получение данных мероприятий получен'); // Логирование
-      const events = await Event.find(); // Получаем все документы из коллекции
-      res.json(events); // Отправляем данные в формате JSON
+        console.log('Запрос на получение данных мероприятий получен');
+        const events = await Event.find();
+        res.json(events);
     } catch (err) {
-      res.status(500).json({ message: err.message }); // Обработка ошибок
+        res.status(500).json({ message: err.message });
     }
-  });
+});
 
-  
-/* ----------------------------------------------------------------------------------------------------------- */
+// Схема для заявки
 const applicationSchema = new mongoose.Schema({
+    applicationId: Number,
     name: String,
     phone: String,
     course: String,
-    date: { type: String, default: '' } // Теперь date будет строкой
+    date: { type: String, default: '' }
 });
 
-// Pre-save hook для форматирования даты
 applicationSchema.pre('save', function(next) {
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
-    const month = String(now.getMonth() + 1).padStart(2, '0'); // Месяцы начинаются с 0
+    const month = String(now.getMonth() + 1).padStart(2, '0');
     const year = now.getFullYear();
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
 
-    // Форматируем дату
     this.date = `${day}.${month}.${year} ${hours}:${minutes}`;
     next();
 });
@@ -78,7 +101,10 @@ app.post('/api/applications', async (req, res) => {
     try {
         const { name, phone, course } = req.body;
 
+        const applicationId = await getNextSequenceValue('applicationId');
+
         const newApplication = new Application({
+            applicationId,
             name,
             phone,
             course
@@ -86,109 +112,71 @@ app.post('/api/applications', async (req, res) => {
 
         await newApplication.save();
 
-        res.status(201).json({ message: 'Application saved successfully!', date: newApplication.date });
+        const message = `Новая заявка на курс!\nНомер заявки: ${applicationId}\nИмя: ${name}\nТелефон: ${phone}\nКурс: ${course}`;
+        bot.sendMessage(process.env.TELEGRAM_CHAT_ID, message);
+
+        res.status(201).json({ message: 'Application saved successfully!', date: newApplication.date, applicationId });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
     }
 });
-/* ----------------------------------------------------------------------------------------------------------- */
-/* ----------------------------------------------------------------------------------------------------------- */
-/* ----------------------------------------------------------------------------------------------------------- */
-/* ----------------------------------------------------------------------------------------------------------- */
+
 // Схема и модель для MongoDB
 const courseSchema = new mongoose.Schema({
     title: String,
     category: String,
     price: Number,
-  });
-  
-  const userSchema = new mongoose.Schema({
+});
+
+const userSchema = new mongoose.Schema({
+    applicationId: Number,
     name: String,
     phone: String,
     items: Array,
-  });
-  
-  const User = mongoose.model('User', userSchema);
-  
-  // POST-запрос для обработки данных с фронтенда
-  app.post('/api/submit', async (req, res) => {
+});
+
+const User = mongoose.model('User', userSchema);
+
+// POST-запрос для обработки данных с фронтенда
+app.post('/api/submit', async (req, res) => {
     try {
-      const { name, phone, items } = req.body;
-  
-      // Создаем новый документ в базе данных
-      const newUser = new User({
-        name,
-        phone,
-        items,
-      });
-  
-      // Сохраняем документ в базу данных
-      await newUser.save();
-  
-      // Отправляем ответ об успешном сохранении
-      res.status(200).json({ message: 'Заявка успешно отправлена!' });
+        const { name, phone, items } = req.body;
+
+        const applicationId = await getNextSequenceValue('applicationId');
+
+        const newUser = new User({
+            applicationId,
+            name,
+            phone,
+            items,
+        });
+
+        await newUser.save();
+
+        let message = `Новая заявка от пользователя!\nНомер заявки: ${applicationId}\nИмя: ${name}\nТелефон: ${phone}\nТовары:\n`;
+        items.forEach(item => {
+            message += `- Название: ${item.title}, Категория: ${item.category}, Цена: от ${item.price}\n`;
+        });
+
+        bot.sendMessage(process.env.TELEGRAM_CHAT_ID, message);
+
+        res.status(200).json({ message: 'Заявка успешно отправлена!', applicationId });
     } catch (error) {
-      console.error('Ошибка при сохранении данных:', error);
-      res.status(500).json({ message: 'Произошла ошибка при отправке заявки.' });
+        console.error('Ошибка при сохранении данных:', error);
+        res.status(500).json({ message: 'Произошла ошибка при отправке заявки.' });
     }
-  });
+});
 
+bot.onText(/\/start/, (msg) => {
+    const chatId = msg.chat.id;
+    console.log(`Chat ID: ${chatId}`);
+    bot.sendMessage(chatId, 'Привет! Я бот, который будет уведомлять вас о новых заказах.');
+});
 
-
-
-
-
-/* ----------------------------------------------------------------------------------------------------------- */
-/* ----------------------------------------------------------------------------------------------------------- */
-/* ----------------------------------------------------------------------------------------------------------- */
-/* ----------------------------------------------------------------------------------------------------------- */
-/* ----------------------------------------------------------------------------------------------------------- */
-
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+bot.on('polling_error', (error) => {
+    console.error('Polling error:', error);
+});
 
 // Схема и модель для коллекции magazine
 const magazineSchema = new mongoose.Schema({
@@ -201,7 +189,6 @@ const magazineSchema = new mongoose.Schema({
     detailed: String,
 });
 
-// Указываем имя коллекции явно
 const Magazine = mongoose.model('magazine', magazineSchema, 'magazine');
 
 // Схема и модель для коллекции ski
@@ -215,7 +202,6 @@ const skiSchema = new mongoose.Schema({
     detailed: String,
 });
 
-// Указываем имя коллекции явно
 const Ski = mongoose.model('ski', skiSchema, 'ski');
 
 // Схема и модель для коллекции snowboard
@@ -229,14 +215,12 @@ const snowboardSchema = new mongoose.Schema({
     detailed: String,
 });
 
-// Указываем имя коллекции явно
 const Snowboard = mongoose.model('snowboard', snowboardSchema, 'snowboard');
 
 // Роуты
-// 1. Получить все записи из коллекции ski
 app.get('/api/ski', async (req, res) => {
     try {
-        console.log('Запрос на получение данных ski получен'); // Логирование
+        console.log('Запрос на получение данных ski получен');
         const skis = await Ski.find();
         res.json(skis);
     } catch (err) {
@@ -244,20 +228,19 @@ app.get('/api/ski', async (req, res) => {
     }
 });
 
-// 2. Получить все записи из коллекции snowboards
 app.get('/api/snowboards', async (req, res) => {
     try {
-        console.log('Запрос на получение данных snowboards получен'); // Логирование
+        console.log('Запрос на получение данных snowboards получен');
         const snowboards = await Snowboard.find();
         res.json(snowboards);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
-// 2. Получить все записи из коллекции magazine
+
 app.get('/api/magazine', async (req, res) => {
     try {
-        console.log('Запрос на получение данных snowboards получен'); // Логирование
+        console.log('Запрос на получение данных snowboards получен');
         const magazines = await Magazine.find();
         res.json(magazines);
     } catch (err) {
