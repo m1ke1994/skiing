@@ -5,15 +5,49 @@ const props = defineProps({
   isFuncButtonOrder: {
     type: Function,
     required: true,
-  },
-});
+  }
 
+});
+const validateSend = ref('');
+const validateForm = ref(false);
+const successValidate = ref(false);
+const showModal = ref(false);
 const selectedOption = ref('');
 const name = ref('');
 const phone = ref('');
 
+const validateFormModal = () => {
+  let isValid = true;
+
+  // Валидация телефона
+  if (phone.value.length !== 11 || !/^\d+$/.test(phone.value)) {
+    validateSend.value = "Проверьте введенные данные. Попробуйте еще раз.";
+    isValid = false;
+  } else {
+    validateSend.value = "";
+  }
+
+  // Валидация имени
+  if (name.value.length < 2 || !/^[а-яА-ЯёЁa-zA-Z\s]+$/.test(name.value)) {
+    validateSend.value = "Проверьте введенные данные. Попробуйте еще раз.";
+    isValid = false;
+  }
+  // Валидация выбора курса
+  if (!selectedOption.value) {
+    validateSend.value = "Пожалуйста, выберите курс.";
+    isValid = false;
+  }
+
+  validateForm.value = !isValid; // Обновляем состояние валидности формы
+  return isValid;
+};
 const submitForm = async (event) => {
-  /* event.preventDefault(); // Предотвращаем стандартное поведение формы */
+  event.preventDefault(); // Предотвращаем стандартное поведение формы
+
+  // Проверяем валидность формы
+  if (!validateFormModal()) {
+    return; // Если форма невалидна, прерываем отправку
+  }
 
   const formData = {
     name: name.value,
@@ -35,13 +69,39 @@ const submitForm = async (event) => {
     }
 
     const result = await response.json();
+    
     console.log('Данные успешно отправлены:', result);
-    alert('Ваша заявка успешно отправлена!');
+
+    // Показываем модальное окно
+    showModal.value = true;
+    successValidate.value = true;
+
+    // Очищаем поля формы
+    name.value = '';
+    phone.value = '';
+    selectedOption.value = '';
+   
+    // Скрываем модальное окно через 3 секунды
+    setTimeout(() => {
+      showModal.value = false;
+      successValidate.value = false;
+      isButtonOrder.value = false;
+      
+    }, 3000);
+    
   } catch (error) {
     console.error('Ошибка:', error);
-    alert('Произошла ошибка при отправке заявки. Пожалуйста, попробуйте еще раз.');
+    validateSend.value = "Произошла ошибка при отправке заявки. Пожалуйста, попробуйте еще раз.";
   }
 };
+
+
+/* наблюдаиель за запись окна  */
+watch(showModal,(newValue) => {
+  if (!newValue) {
+    props.isFuncButtonOrder();
+  }
+})
 </script>
 
 <template>
@@ -54,8 +114,9 @@ const submitForm = async (event) => {
       <h2>Запись на курс</h2>
       <p class="order__bottom__text">Оставьте заявку, мы вам позвоним и подберём курс для вас.</p>
       <form @submit="submitForm">
-        <input type="text" placeholder="Имя" v-model="name" required>
-        <input type="text" placeholder="Телефон" v-model="phone" required>
+        <p v-if="validateForm" class="error">{{ validateSend }}</p>
+        <input type="text" placeholder="Имя" v-model="name" maxlength="15" minlength="2" required>
+        <input type="text" placeholder="Телефон" v-model="phone" maxlength="11" pattern="\d{11}" required>
         
         <div class="checkbox-group">
           <label>
@@ -72,10 +133,44 @@ const submitForm = async (event) => {
       </form>
       <p>Нажимая на кнопку «Записаться», вы даёте согласие на хранение и обработку ваших персональных данных.</p>
     </div>
+
+    <!-- Модальное окно -->
+    <div v-if="showModal" class="modal">
+      <div class="modal-content">
+        <p сlass="success">Ваша заявка успешно отправлена! В течении 5 мин с Вами свяжется менеджер!</p>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
+ .success {
+    color: rgb(8, 119, 8);
+  }
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.error {
+  color: red;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
 input[type="text"] {
   border: 1px solid #034184;
   width: 100%;

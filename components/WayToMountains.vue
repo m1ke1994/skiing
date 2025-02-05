@@ -52,7 +52,7 @@ fetchData();
    
   
     <div class="date_way_left">
-        <h2>Ближайший выезд в горы: {{ nearestDate.date }}</h2>
+        <h2>Ближайший выезд в горы: <span>{{ nearestDate.date }}</span></h2>
         <p class="date_way_left__text">Погрузитесь в атмосферу зимних приключений с нашей командой! 
             Программа включает обучение катанию, проживание в уютных отелях и незабываемые
             виды заснеженных вершин. Не упустите шанс 
@@ -67,6 +67,9 @@ fetchData();
    
 </template>
 <style scoped>
+h2 span{
+  color:#EC9303
+}
 @media (max-width: 768px) {
     #date_way {
     display: flex;
