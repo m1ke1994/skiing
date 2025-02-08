@@ -5,7 +5,10 @@ const cors = require('cors');
 const app = express();
 const TelegramBot = require('node-telegram-bot-api');
 const PORT = process.env.PORT || 3005;
-
+// Импорт admin.js
+const adminApp = require('./admin'); // Убедитесь, что путь к файлу правильный
+// Подключение маршрутов из admin.js
+app.use('./admin', adminApp); // Все маршруты из admin.js будут доступны по префиксу /admin
 // Инициализация бота
 const botToken = process.env.TELEGRAM_BOT_TOKEN;
 const bot = new TelegramBot(botToken, { polling: true });
@@ -244,6 +247,28 @@ app.get('/api/magazine', async (req, res) => {
         const magazines = await Magazine.find();
         res.json(magazines);
     } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+
+
+/* ------------------------------------ */
+const superuserSchema = new mongoose.Schema({
+    email: { type: String, required: true },
+    password: { type: String, required: true },
+}, { collection: 'superusers' }); // Явное указание имени коллекции
+
+const superuser = mongoose.model('superuser', superuserSchema);
+
+app.get('/api/superuser', async (req, res) => {
+    try {
+        console.log('Запрос на получение данных суперпользователей получен');
+        const superusers = await superuser.find();
+        console.log('Найдены суперпользователи:', superusers); // Логирование результата
+        res.json(superusers); // Отправляем данные суперпользователей
+    } catch (err) {
+        console.error('Ошибка при получении суперпользователей:', err); // Логирование ошибки
         res.status(500).json({ message: err.message });
     }
 });
