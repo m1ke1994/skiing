@@ -1,384 +1,267 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-const addEvent = ref(false);
-const openAddEvent = () => {
-  addEvent.value = !addEvent.value;
-}
-const newEvent = ref({
-  place: "",
-  month: "",
-  date: "",
-  leader_name: "",
-  leader_responsibilities: "",
-  requirements_equipment: "",
-  requirements_skills: "",
-  cost_amount: 0,
-  cost_currency: "RUB",
-  cost_additional_services: "",
-  start_date: "",
-});
+/* ------------------расписание начало----------------------------------------------------------- */
+const events = ref([]);
+const defaultEvent = {
+  month: '',
+  place: '',
+  date: '22 марта – 29 марта 2025',
+  isList: false,
+  leader_name: 'Саша Пыжов',
+  leader_responsibilities: '',
+  requirements_equipment: '',
+  requirements_skills: '',
+  cost_amount: '18000',
+  cost_currency: 'RUB',
+  cost_additional_services: '',
+  start_date: ''
+};
+const newEvent = ref({ ...defaultEvent });
+
+const fetchEvents = async () => {
+  try {
+    const response = await fetch('http://localhost:3005/api/events');
+    events.value = await response.json();
+  } catch (error) {
+    console.error('Ошибка загрузки мероприятий:', error);
+  }
+};
 
 const createEvent = async () => {
   try {
-    // Преобразуем строки в массивы
-    newEvent.value.leader_responsibilities = newEvent.value.leader_responsibilities.split(",");
-    newEvent.value.requirements_equipment = newEvent.value.requirements_equipment.split(",");
-
-    // Отправляем данные на сервер
-    const response = await fetch("http://localhost:3005/api/events", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newEvent.value),
+    const response = await fetch('http://localhost:3005/api/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newEvent.value)
     });
 
     if (!response.ok) {
-      throw new Error("Ошибка при создании события");
+      throw new Error('Ошибка при создании мероприятия');
     }
 
-    // Очищаем форму
-    newEvent.value = {
-      place: "",
-      month: "",
-      date: "",
-      leader_name: "",
-      leader_responsibilities: "",
-      requirements_equipment: "",
-      requirements_skills: "",
-      cost_amount: 0,
-      cost_currency: "RUB",
-      cost_additional_services: "",
-      start_date: "",
-    };
+    fetchEvents();
+    newEvent.value = { ...defaultEvent }; // Очищаем форму
+  } catch (error) {
+    console.error('Ошибка создания мероприятия:', error);
+  }
+};
 
-    // Обновляем список событий
+const deleteEvent = async (id) => {
+  try {
+    const response = await fetch(`http://localhost:3005/api/events/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка при удалении');
+    }
+
     fetchEvents();
   } catch (error) {
-    console.error("Ошибка при создании события:", error);
-  }
-};
-const item_open = ref(false);
-const events = ref([]); // Реактивное состояние для хранения событий
-
-const openItem = () => {
-  item_open.value = !item_open.value;
-};
-
-// Функция для загрузки данных
-const fetchEvents = async () => {
-  try {
-    // Выполняем запрос к API
-    const response = await fetch('http://localhost:3005/api/events');
-    if (!response.ok) {
-      throw new Error('Ошибка при загрузке данных');
-    }
-    const data = await response.json(); // Парсим JSON
-    events.value = data; // Заполняем данные
-  } catch (error) {
-    console.error('Ошибка при загрузке данных:', error);
+    console.error('Ошибка удаления мероприятия:', error);
   }
 };
 
-// Выполняем запрос при монтировании компонента
 onMounted(fetchEvents);
+/* ------------------расписание конец----------------------------------------------------------- */
+const orders=ref([]);
+const allOrders=async()=>{
+  try {
+    const response = await fetch('http://localhost:3005/api/applications');
+    orders.value = await response.json();
+  } catch (error) {
+    console.error('Ошибка загрузки заказов:', error);
+  }
+}
+allOrders();
+const isOrders=ref(false);
+const FuncIsOrders=()=>{
+  isOrders.value=!isOrders.value;
+}
 </script>
-
 <template>
-  <div class="general-container w-full flex">
-    <header class="bg-gray-200 p-4">
-      <h1 class="text-3xl">Добро пожаловать Александр!</h1>
-    </header>
-    <main>
-      <h1 class="p-4 text-2xl">Задачи</h1>
-      <div class="items">
-        <div class="item">
-          <h2 class="text-3xl font-bold">Расписание выездов на сезон 24/25</h2>
-          <div class="flex justify-center items-center gap-4">
-            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-lg" @click="openItem">
-              {{ item_open ? 'Скрыть' : 'Показать рассписание' }}
-          </button>
-          <button
-  class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-lg"
-  @click="openAddEvent"
->
-  {{ addEvent ? 'Скрыть' : 'Добавить новое расписание' }}
-</button>
+  <div class="main_admin">
+    <div class="header_admin">
+      <h1 class="p-4 text-white font-bold">Добро пожаловать, Александр</h1>
+     
+    </div>
+    <div class="content_admin">
+      <div class="p-6">
+        <h1 class="text-3xl font-extrabold text-white mb-6">Управление мероприятиями</h1>
+        <form @submit.prevent="createEvent" class="grid grid-cols-2 gap-4 bg-gray-800 p-6 rounded-lg shadow-lg">
+          <input v-model="newEvent._id" placeholder="ID" class="input-field" type="number" required />
+          <input v-model="newEvent.month" placeholder="Март" class="input-field" required />
+          <input v-model="newEvent.place" placeholder="Хибины" class="input-field" required />
+          <input v-model="newEvent.date" placeholder="22 марта – 29 марта 2025" class="input-field" required />
+          <div class="flex items-center space-x-2 hidden">
+            <input v-model="newEvent.isList" type="checkbox" class="w-5 h-5" />
+            <label class="text-white">isList (false по умолчанию)</label>
           </div>
-          <div v-if="item_open" class="item_open">
-            <div v-for="event in events" :key="event._id" class="event-item">
-              <h3 class="text-lg">{{ event.place }} - {{ event.month }}</h3>
-              <p><span class="font-bold">Дата:</span> {{ event.date }}</p>
-              <p><span class="font-bold">Руководитель:</span> {{ event.leader_name }}</p>
-              <p><span class="font-bold">Обязанности руководителя:</span></p>
-              <ul>
-                <li v-for="(responsibility, index) in event.leader_responsibilities" :key="index">{{ responsibility }}</li>
-              </ul>
-              <p><span class="font-bold">Требуемое снаряжение:</span></p>
-              <ul>
-                <li v-for="(equipment, index) in event.requirements_equipment" :key="index">{{ equipment }}</li>
-              </ul>
-              <p><span class="font-bold">Требуемые навыки:</span> {{ event.requirements_skills }}</p>
-              <p><span class="font-bold">Стоимость:</span> {{ event.cost_amount }} {{ event.cost_currency }}</p>
-              <p><span class="font-bold">Дополнительные услуги:</span> {{ event.cost_additional_services }}</p>
-              <div class="flex justify-between items-center">
-                <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-lg">Удалить</button>
-                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-lg">Изменить</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- _______________________________________________________________________ -->
-        <div v-if="addEvent" class="create_item">
-  <h2 class="text-3xl font-bold mb-4">Добавить новое событие</h2>
-  <form @submit.prevent="createEvent" class="space-y-4">
-    <!-- Место проведения -->
-    <div>
-      <label for="place" class="block text-lg font-medium">Место проведения:</label>
-      <input
-        type="text"
-        id="place"
-        v-model="newEvent.place"
-        required
-        class="w-full p-2 border border-gray-300 rounded"
-        placeholder="Например, Кавказ"
-      />
-    </div>
-
-    <!-- Месяц -->
-    <div>
-      <label for="month" class="block text-lg font-medium">Месяц:</label>
-      <input
-        type="text"
-        id="month"
-        v-model="newEvent.month"
-        required
-        class="w-full p-2 border border-gray-300 rounded"
-        placeholder="Например, Февраль"
-      />
-    </div>
-
-    <!-- Дата -->
-    <div>
-      <label for="date" class="block text-lg font-medium">Дата:</label>
-      <input
-        type="text"
-        id="date"
-        v-model="newEvent.date"
-        required
-        class="w-full p-2 border border-gray-300 rounded"
-        placeholder="Например, 14 февраля – 23 февраля 2025"
-      />
-    </div>
-
-    <!-- Руководитель -->
-    <div>
-      <label for="leader_name" class="block text-lg font-medium">Руководитель:</label>
-      <input
-        type="text"
-        id="leader_name"
-        v-model="newEvent.leader_name"
-        required
-        class="w-full p-2 border border-gray-300 rounded"
-        placeholder="Например, Саша Пыжов"
-      />
-    </div>
-
-    <!-- Обязанности руководителя -->
-    <div>
-      <label for="leader_responsibilities" class="block text-lg font-medium">Обязанности руководителя:</label>
-      <textarea
-        id="leader_responsibilities"
-        v-model="newEvent.leader_responsibilities"
-        required
-        class="w-full p-2 border border-gray-300 rounded"
-        placeholder="Введите обязанности через запятую"
-      ></textarea>
-    </div>
-
-    <!-- Требуемое снаряжение -->
-    <div>
-      <label for="requirements_equipment" class="block text-lg font-medium">Требуемое снаряжение:</label>
-      <textarea
-        id="requirements_equipment"
-        v-model="newEvent.requirements_equipment"
-        required
-        class="w-full p-2 border border-gray-300 rounded"
-        placeholder="Введите снаряжение через запятую"
-      ></textarea>
-    </div>
-
-    <!-- Требуемые навыки -->
-    <div>
-      <label for="requirements_skills" class="block text-lg font-medium">Требуемые навыки:</label>
-      <input
-        type="text"
-        id="requirements_skills"
-        v-model="newEvent.requirements_skills"
-        required
-        class="w-full p-2 border border-gray-300 rounded"
-        placeholder="Например, умение делать связанные повороты"
-      />
-    </div>
-
-    <!-- Стоимость -->
-    <div>
-      <label for="cost_amount" class="block text-lg font-medium">Стоимость:</label>
-      <input
-        type="number"
-        id="cost_amount"
-        v-model="newEvent.cost_amount"
-        required
-        class="w-full p-2 border border-gray-300 rounded"
-        placeholder="Например, 15000"
-      />
-    </div>
-
-    <!-- Валюта -->
-    <div>
-      <label for="cost_currency" class="block text-lg font-medium">Валюта:</label>
-      <input
-        type="text"
-        id="cost_currency"
-        v-model="newEvent.cost_currency"
-        required
-        class="w-full p-2 border border-gray-300 rounded"
-        placeholder="Например, RUB"
-      />
-    </div>
-
-    <!-- Дополнительные услуги -->
-    <div>
-      <label for="cost_additional_services" class="block text-lg font-medium">Дополнительные услуги:</label>
-      <input
-        type="text"
-        id="cost_additional_services"
-        v-model="newEvent.cost_additional_services"
-        class="w-full p-2 border border-gray-300 rounded"
-        placeholder="Например, помощь с размещением"
-      />
-    </div>
-
-    <!-- Дата начала -->
-    <div>
-      <label for="start_date" class="block text-lg font-medium">Дата начала:</label>
-      <input
-        type="date"
-        id="start_date"
-        v-model="newEvent.start_date"
-        required
-        class="w-full p-2 border border-gray-300 rounded"
-      />
-    </div>
-
-    <!-- Кнопка отправки -->
-    <div>
-      <button
-        type="submit"
-        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-lg"
-      >
-        Создать событие
-      </button>
-    </div>
-  </form>
-</div>
-        <!-- _______________________________________________________________________ -->
+          <input v-model="newEvent.leader_name" placeholder="Саша Пыжов" class="input-field" />
+          <input v-model="newEvent.leader_responsibilities" placeholder="Обязанности лидера" class="input-field" />
+          <input v-model="newEvent.requirements_equipment" placeholder="Инвентарь, шлем" class="input-field" />
+          <input v-model="newEvent.requirements_skills" placeholder="Навыки" class="input-field" />
+          <input v-model="newEvent.cost_amount" placeholder="18000" class="input-field" type="number" required />
+          <input v-model="newEvent.cost_currency" placeholder="RUB" class="input-field" required />
+          <input v-model="newEvent.cost_additional_services" placeholder="Доп. услуги" class="input-field" />
+          <input v-model="newEvent.start_date" placeholder="2025-03-22" class="input-field" required />
+          <button type="submit" class="submit-btn col-span-2 w-1/4">Добавить</button>
+        </form>
+        <ul class="mt-6 space-y-2">
+          <li v-for="event in events" :key="event._id" class="event-item">
+            <span>{{ event.month }} - {{ event.place }} - {{ event.date }} - {{ event.cost_amount }} {{ event.cost_currency }}</span>
+            <button @click="deleteEvent(event._id)" class="delete-btn">Удалить</button>
+          </li>
+        </ul>
       </div>
-    </main>
+      <div class="orders p-4">
+  <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-white">Заявки пользователей с тела сайта</h1>
+    <p class="text-xl sm:text-2xl font-extrabold text-white mt-2 sm:mt-0">Общее количество заявок: {{ orders.length }}</p>
+    <button @click="FuncIsOrders" 
+      class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-all">
+      Показать/Скрыть
+    </button>
+  </div>
+
+  <ul v-if="isOrders" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-gray-800 p-6 rounded-lg shadow-lg">
+    <li v-for="order in orders" :key="order._id" 
+      class="bg-gray-700 p-4 rounded-lg shadow-md text-white flex flex-col space-y-2">
+      <span>📅 {{ order.date }}</span>
+      <span>👤 {{ order.name }}</span>
+      <span>📞 {{ order.phone }}</span>
+      <span>🎿 {{ order.course }}</span>
+    </li>
+  </ul>
+</div>
+    </div>
   </div>
 </template>
 
-<style scoped>
-/* ______________________________________________________________________ */
-.create_item {
-  background-color: #f2f1f5;
-  padding: 20px;
-  margin: 10px;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
 
-.create_item h2 {
-  color: #333;
-  margin-bottom: 20px;
-}
 
-.create_item label {
-  color: #333;
-  margin-bottom: 8px;
-  display: block;
-}
 
-.create_item input,
-.create_item textarea {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
-  margin-bottom: 12px;
-}
 
-.create_item button {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-.create_item button:hover {
-  background-color: #218838;
-}
-/* ______________________________________________________________________ */
-.general-container {
-  color: black;
-}
-
-main {
-  height: 100vh;
-}
-
-header {
-  height: 50vh;
-}
-
-h1 {
-  color: black;
-}
-
-.item {
-  background-color: #b33411;
-  padding: 10px;
-  margin: 10px;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.event-item {
-  margin-top: 10px;
-  padding: 10px;
-  background-color: #f0f0f0;
-  border-radius: 5px;
-  font-size: 1.125rem; /* Увеличенный размер шрифта */
-}
-
-.event-item p {
-  margin: 8px 0; /* Отступы для абзацев */
-}
-
-.event-item h3 {
-  font-size: 1.25rem; /* Увеличенный размер шрифта для заголовков */
-}
-
-.event-item ul {
-  margin: 8px 0;
-  padding-left: 20px;
-}
-
-.event-item ul li {
-  list-style-type: disc;
-}
-</style>
+ <style scoped>
+ .main_admin {
+   background-color: #1a1a1d;
+   width: 100%;
+   min-height: 100vh;
+   display: flex;
+   flex-direction: column;
+   color: white;
+ }
+ 
+ .header_admin {
+   background-color: #6a994e;
+   width: 100%;
+   padding: 20px;
+   text-align: center;
+ }
+ 
+ .content_admin {
+   flex: 1;
+   padding: 20px;
+   width: 100%;
+ }
+ 
+ /* Грид форма: 2 колонки на больших экранах, 1 колонка на мобильных */
+ form {
+   display: grid;
+   grid-template-columns: repeat(2, 1fr);
+   gap: 10px;
+ }
+ 
+ @media (max-width: 768px) {
+   form {
+     grid-template-columns: 1fr;
+   }
+ }
+ 
+ .input-field {
+   background: #2d2d30;
+   color: white;
+   border: 1px solid #555;
+   padding: 10px;
+   border-radius: 5px;
+   outline: none;
+   width: 100%;
+ }
+ 
+ .input-field:focus {
+   border-color: #6a994e;
+ }
+ 
+ .submit-btn {
+   background-color: #6a994e;
+   color: white;
+   padding: 12px;
+   border-radius: 5px;
+   font-weight: bold;
+   transition: 0.3s;
+   width: 20%;
+ }
+ 
+ .submit-btn:hover {
+   background-color: #4e7d3e;
+ }
+ 
+ /* Список мероприятий */
+ .event-item {
+   display: flex;
+   justify-content: space-between;
+   background: #2d2d30;
+   padding: 12px;
+   border-radius: 5px;
+   transition: 0.3s;
+   flex-wrap: wrap;
+ }
+ 
+ .event-item span {
+   flex: 1;
+ }
+ 
+ .delete-btn {
+   background-color: #d32f2f;
+   color: white;
+   padding: 8px 12px;
+   border-radius: 5px;
+   transition: 0.3s;
+ }
+ 
+ .delete-btn:hover {
+   background-color: #b71c1c;
+ }
+ 
+ /* Медиазапросы для мобильных */
+ @media (max-width: 768px) {
+  .submit-btn {
+   background-color: #6a994e;
+   color: white;
+   padding: 12px;
+   border-radius: 5px;
+   font-weight: bold;
+   transition: 0.3s;
+   width: 100%;
+ }
+   .main_admin {
+     flex-direction: column;
+   }
+ 
+   .header_admin {
+     width: 100%;
+     height: auto;
+   }
+ 
+   .event-item {
+     flex-direction: column;
+     align-items: flex-start;
+   }
+ 
+   .delete-btn {
+     margin-top: 10px;
+     width: 100%;
+   }
+ }
+ </style>
+ 

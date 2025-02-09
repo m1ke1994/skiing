@@ -5,10 +5,7 @@ const cors = require('cors');
 const app = express();
 const TelegramBot = require('node-telegram-bot-api');
 const PORT = process.env.PORT || 3005;
-// Импорт admin.js
-const adminApp = require('./admin'); // Убедитесь, что путь к файлу правильный
-// Подключение маршрутов из admin.js
-app.use('./admin', adminApp); // Все маршруты из admin.js будут доступны по префиксу /admin
+
 // Инициализация бота
 const botToken = process.env.TELEGRAM_BOT_TOKEN;
 const bot = new TelegramBot(botToken, { polling: true });
@@ -46,7 +43,7 @@ async function getNextSequenceValue(sequenceName) {
     return sequenceDocument.seq;
 }
 
-// Схема для мероприятия
+/* --------------------------------------------------------------------------------------------------------------- */// Схема для мероприятия
 const eventSchema = new mongoose.Schema({
     _id: Number,
     month: String,
@@ -57,10 +54,10 @@ const eventSchema = new mongoose.Schema({
     leader_responsibilities: Array,
     requirements_equipment: Array,
     requirements_skills: String,
-    cost_amount: Number,
+    cost_amount: String,//Number,
     cost_currency: String,
     cost_additional_services: String,
-    start_date: String,//
+    start_date: String,
 });
 
 const Event = mongoose.model('events', eventSchema, 'events');
@@ -75,6 +72,44 @@ app.get('/api/events', async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
+
+// Роут для создания мероприятия
+app.post('/api/events', async (req, res) => {
+    try {
+        const newEvent = new Event(req.body);
+        await newEvent.save();
+        res.status(201).json(newEvent);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+// Роут для удаления мероприятия
+app.delete('/api/events/:id', async (req, res) => {
+    try {
+        const event = await Event.findByIdAndDelete(req.params.id);
+        if (!event) {
+            return res.status(404).json({ message: 'Мероприятие не найдено' });
+        }
+        res.json({ message: 'Мероприятие удалено' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Роут для обновления мероприятия
+app.put('/api/events/:id', async (req, res) => {
+    try {
+        const updatedEvent = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updatedEvent) {
+            return res.status(404).json({ message: 'Мероприятие не найдено' });
+        }
+        res.json(updatedEvent);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+/* --------------------------------------------------------------------------------------------------------------- */
 
 // Схема для заявки
 const applicationSchema = new mongoose.Schema({
@@ -98,7 +133,15 @@ applicationSchema.pre('save', function(next) {
 });
 
 const Application = mongoose.model('Application', applicationSchema);
-
+// Роут для получения всех заявок
+app.get('/api/applications', async (req, res) => {
+    try {
+        const applications = await Application.find();
+        res.json(applications);
+    } catch (error) {
+        res.status(500).json({ message: 'Ошибка сервера', error });
+    }
+});
 // Маршрут для обработки POST-запросов
 app.post('/api/applications', async (req, res) => {
     try {
