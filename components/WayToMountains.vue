@@ -1,10 +1,58 @@
 <script setup>
+import { ref, onMounted } from 'vue';
+
+const event = ref([]);
+const formattedDates = ref([]); // Массив для хранения отформатированных дат
+const today = ref(new Date()); // Сегодняшняя дата
+const nearestDate = ref(''); // Ближайшая дата
+
+const fetchData = async () => {
+  try {
+    const response = await fetch('http://localhost:3005/api/events');
+    const data = await response.json();
+    event.value = data;
+
+    // Извлекаем start_date и date из данных, преобразуем start_date в Date
+    formattedDates.value = data.map(item => ({
+      start_date: new Date(item.start_date), // Преобразуем start_date в объект Date
+      date: item.date
+    }));
+
+    // Находим ближайшую дату
+    findNearestDate();
+
+    // Выводим данные в консоль для проверки
+    
+  } catch (error) {
+    console.error('Ошибка при загрузке данных:', error);
+  }
+};
+
+const findNearestDate = () => {
+  // Отфильтруем даты, которые больше или равны текущей дате
+  const futureDates = formattedDates.value.filter(item => item.start_date >= today.value);
+
+  if (futureDates.length > 0) {
+    // Найдем минимальную дату из оставшихся
+    nearestDate.value = futureDates.reduce((nearest, current) => {
+      return current.start_date < nearest.start_date ? current : nearest;
+    });
+
+    console.log('Ближайшая дата найдена:', nearestDate.value);
+  } else {
+    console.log('Нет будущих дат.');
+  }
+};
+
+fetchData();
 </script>
 
 <template>
    <section id="date_way">
+   
+  
     <div class="date_way_left">
-        <h2>Ближайший выезд в горы: 25 ноября – 28 ноября. </h2>
+        <h2>Ближайший выезд в горы: <span>{{ nearestDate.date }}</span></h2>
         <p class="date_way_left__text">Погрузитесь в атмосферу зимних приключений с нашей командой! 
             Программа включает обучение катанию, проживание в уютных отелях и незабываемые
             виды заснеженных вершин. Не упустите шанс 
@@ -19,6 +67,9 @@
    
 </template>
 <style scoped>
+h2 span{
+  color:#EC9303
+}
 @media (max-width: 768px) {
     #date_way {
     display: flex;

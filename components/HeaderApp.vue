@@ -86,7 +86,7 @@ onMounted(() => {
           </NuxtLink>
           <div id="basket">
             <img class="basket" @click="props.isFuncBasket" src="/public/img/basket.svg" alt="">
-            <p class="BasketCount">{{ countBasket }}</p>
+            <p v-if="countBasket > 0" class="BasketCount">{{ countBasket }}</p>
           </div>
             
           
@@ -106,7 +106,7 @@ onMounted(() => {
           <NuxtLink to="#">
             <div id="basket">
             <img class="basket" @click="props.isFuncBasket" src="/public/img/basket.svg" alt="">
-            <p class="BasketCount">{{ countBasket }}</p>
+            <p v-if="countBasket > 0" class="BasketCount">{{ countBasket }}</p>
           </div>
           </NuxtLink>
           <NuxtLink >

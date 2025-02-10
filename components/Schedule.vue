@@ -1,3 +1,20 @@
+<script setup>
+import { ref } from 'vue';
+
+const trips = ref([])
+// Получаем данные о курсах из API
+const fetchData = async () => {
+  const response = await fetch('http://localhost:3005/api/events');
+  const data = await response.json();
+  trips.value = data;
+};
+fetchData();
+
+const isListFunc = (index) => {
+  trips.value[index].isList = !trips.value[index].isList;
+};
+</script>
+
 
 <template>
   <div class="sezon__cards" id="trip">
@@ -34,39 +51,7 @@
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      trips: [
-        {
-          month: "Февраль",
-          place: "Кавказ",
-          date: "14 февраля – 23 февраля 2025",
-          isList: false,
-          leader_name: "Саша Пыжов",
-          leader_responsibilities: [
-            "сопровождение на горе",
-            "помощь с ориентацией на трассах",
-            "корректировка техники катания",
-            "помощь с фото/видео отчетами",
-          ],
-          requirements_equipment: ["инвентарь", "шлем"],
-          requirements_skills: "умение делать связанные повороты на 'синих' и местами 'красных' склонах",
-          cost_amount: 15000,
-          cost_currency: "RUB",
-          cost_additional_services: "помощь с поиском/бронированием размещения",
-        },
-      ],
-    };
-  },
-  methods: {
-    isListFunc(index) {
-      this.trips[index].isList = !this.trips[index].isList;
-    },
-  },
-};
-</script>
+
 
 <style scoped>
 p, li {
