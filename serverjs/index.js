@@ -54,7 +54,7 @@ const eventSchema = new mongoose.Schema({
     leader_responsibilities: Array,
     requirements_equipment: Array,
     requirements_skills: String,
-    cost_amount: String,//Number,
+    cost_amount: Number,
     cost_currency: String,
     cost_additional_services: String,
     start_date: String,
