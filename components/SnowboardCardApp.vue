@@ -1,14 +1,14 @@
 <script setup>
 import { ref } from 'vue';
 import { useBasketStore } from '~/stores/basketStore';
-
+const url=`http://localhost:3005`
 
 // Данные о курсах
 const courses = ref([]);
 
 // Получаем данные о курсах из API
 const fetchData = async () => {
-  const response = await fetch('http://localhost:3005/api/snowboards');
+  const response = await fetch(`${url}/api/snowboards`);
   const data = await response.json();
   courses.value = data;
 };

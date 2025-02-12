@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-
+const url= `http://localhost:3005`
 const event = ref([]);
 const formattedDates = ref([]); // Массив для хранения отформатированных дат
 const today = ref(new Date()); // Сегодняшняя дата
@@ -8,7 +8,7 @@ const nearestDate = ref(''); // Ближайшая дата
 
 const fetchData = async () => {
   try {
-    const response = await fetch('http://localhost:3005/api/events');
+    const response = await fetch(`${url}/api/events`);
     const data = await response.json();
     event.value = data;
 

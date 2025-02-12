@@ -1,10 +1,10 @@
 <script setup>
 import { ref } from 'vue';
-
-const trips = ref([])
+const url='http://localhost:3005'
+const trips = ref([]);
 // Получаем данные о курсах из API
 const fetchData = async () => {
-  const response = await fetch('http://localhost:3005/api/events');
+  const response = await fetch(`${url}/api/events`);
   const data = await response.json();
   trips.value = data;
 };

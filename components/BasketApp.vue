@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 import { useBasketStore } from '~/stores/basketStore';
 import { useRouter } from 'vue-router'; // Импортируем useRouter для перенаправления
-
+const url='http://localhost:3005'
 /* -----------------------------Корзина-------------------------------- */
 const props = defineProps({
   isFuncBasket: Function,
@@ -33,7 +33,7 @@ const submitForm = async () => {
 
   try {
     // Отправляем данные на сервер
-    const response = await fetch('http://localhost:3005/api/submit', {
+    const response = await fetch(`${url}/api/submit`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
