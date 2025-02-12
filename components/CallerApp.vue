@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-
+const url='http://localhost:3005'
 const props = defineProps({
   isFuncButtonOrder: {
     type: Function,
@@ -54,7 +54,7 @@ const submitForm = async (event) => {
   };
 
   try {
-    const response = await fetch('http://localhost:3005/api/applications', {
+    const response = await fetch(`${url}/api/applications`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

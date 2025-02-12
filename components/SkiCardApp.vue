@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useBasketStore } from '~/stores/basketStore';
-
+const url=`http://localhost:3005`
 
 
 
@@ -10,7 +10,7 @@ const courses = ref([]);
 
 // Получаем данные о курсах из API
 const fetchData = async () => {
-  const response = await fetch('http://localhost:3005/api/ski');
+  const response = await fetch(`${url}/api/ski`);
   const data = await response.json();
   courses.value = data;
 };
